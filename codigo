@@ -1,0 +1,125 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define BOARD_SIZE 10
+#define NUM_SHIPS 5
+
+typedef struct {
+    char state; // 'O' para água, 'X' para navio, 'H' para acerto, 'M' para erro
+} Cell;
+
+typedef struct {
+    Cell cells[BOARD_SIZE][BOARD_SIZE];
+} Board;
+
+typedef struct {
+    int size;
+    bool isSunk;
+} Ship;
+
+void initializeBoard(Board *board) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            board->cells[i][j].state = 'O';
+        }
+    }
+}
+
+void displayBoard(Board *board) {
+    printf("  0 1 2 3 4 5 6 7 8 9\n");
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        printf("%d ", i);
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            printf("%c ", board->cells[i][j].state);
+        }
+        printf("\n");
+    }
+}
+
+bool placeShip(Board *board, int x, int y, Ship *ship) {
+    if (board->cells[x][y].state == 'O') {
+        board->cells[x][y].state = 'X';
+        ship->size--;
+        return true;
+    }
+    return false;
+}
+
+bool shoot(Board *board, int x, int y) {
+    if (board->cells[x][y].state == 'X') {
+        board->cells[x][y].state = 'H';
+        return true;
+    } else if (board->cells[x][y].state == 'O') {
+        board->cells[x][y].state = 'M';
+    }
+    return false;
+}
+
+bool allShipsSunk(Ship ships[]) {
+    for (int i = 0; i < NUM_SHIPS; i++) {
+        if (!ships[i].isSunk) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int main() {
+    Board player1Board, player2Board;
+    Ship player1Ships[NUM_SHIPS], player2Ships[NUM_SHIPS];
+
+    initializeBoard(&player1Board);
+    initializeBoard(&player2Board);
+
+    // Implemente lógica para o jogador colocar seus navios
+
+    // Inicialize os navios
+    for (int i = 0; i < NUM_SHIPS; i++) {
+        player1Ships[i].size = i + 2;
+        player1Ships[i].isSunk = false;
+        player2Ships[i].size = i + 2;
+        player2Ships[i].isSunk = false;
+    }
+
+    int currentPlayer = 1;
+
+    while (true) {
+        if (currentPlayer == 1) {
+            printf("Jogador 1:\n");
+            displayBoard(&player1Board);
+        } else {
+            printf("Jogador 2:\n");
+            displayBoard(&player2Board);
+        }
+
+        printf("Informe as coordenadas do tiro (linha coluna): ");
+        int x, y;
+        scanf("%d %d", &x, &y);
+
+        if (currentPlayer == 1) {
+            if (shoot(&player2Board, x, y)) {
+                printf("Acerto!\n");
+                if (allShipsSunk(player2Ships)) {
+                    printf("Jogador 1 venceu!\n");
+                    break;
+                }
+            } else {
+                printf("Erro!\n");
+            }
+        } else {
+            if (shoot(&player1Board, x, y)) {
+                printf("Acerto!\n");
+                if (allShipsSunk(player1Ships)) {
+                    printf("Jogador 2 venceu!\n");
+                    break;
+                }
+            } else {
+                printf("Erro!\n");
+            }
+        }
+
+        currentPlayer = (currentPlayer == 1) ? 2 : 1;
+    }
+
+    return 0;
+}
